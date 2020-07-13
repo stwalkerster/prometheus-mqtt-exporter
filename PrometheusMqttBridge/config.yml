@@ -1,0 +1,53 @@
+mqtt:
+  host: localhost
+  port: 1883
+  tls: true
+  username: 
+  password: 
+  clientId: prometheus
+  topics:
+    - $SYS/broker/clients/+
+    - $SYS/broker/retained messages/count
+    - $SYS/broker/subscriptions/count
+    - $SYS/broker/messages/+
+    - $SYS/broker/publish/messages/+
+  useWill: false
+  willRetain:
+  willTopic:
+  willMessage:
+  willInitialiseMessage:
+prometheus:
+  port: 9100
+  path: metrics/
+counters:
+  - metric: mqtt_messages_sent_total
+    help: MQTT messages (of all types) sent by broker
+    parse: \$SYS/broker/messages/sent
+  - metric: mqtt_messages_received_total
+    help: MQTT messages (of all types) received by broker
+    parse: \$SYS/broker/messages/received
+  - metric: mqtt_publish_messages_sent_total
+    help: MQTT PUBLISH messages sent by broker
+    parse: \$SYS/broker/publish/messages/sent
+  - metric: mqtt_publish_messages_received_total
+    help: MQTT PUBLISH messages received by broker
+    parse: \$SYS/broker/publish/messages/received
+  - metric: mqtt_publish_messages_received_total
+    help: MQTT PUBLISH messages dropped due to inflight/queuing limits
+    parse: \$SYS/broker/publish/messages/dropped
+gauges:
+  - metric: mqtt_clients_connected
+    help: Number of clients currently connected to the MQTT broker
+    parse: \$SYS/broker/clients/connected
+  - metric: mqtt_clients_disconnected
+    help: Number of persistent clients (with clean session disableD) registered, but disconnected from the MQTT broker
+    parse: \$SYS/broker/clients/disconnected
+  - metric: mqtt_clients_maximum
+    help: High-watermark of clients connected to the MQTT broker simultaneously
+    parse: \$SYS/broker/clients/maximum
+  - metric: mqtt_messages_retained
+    help: Number of clients connected to the MQTT broker
+    parse: \$SYS/broker/retained messages/count
+  - metric: mqtt_subscriptions
+    help: Number of active subscriptions
+    parse: \$SYS/broker/subscriptions/count

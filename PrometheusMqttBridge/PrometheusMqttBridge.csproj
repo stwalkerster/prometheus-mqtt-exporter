@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>netcoreapp3.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="M2MqttDotnetCore" Version="1.1.0" />
+      <PackageReference Include="prometheus-net" Version="3.6.0" />
+      <PackageReference Include="prometheus-net.DotNetRuntime" Version="3.3.1" />
+      <PackageReference Include="YamlDotNet" Version="8.1.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="config.yml">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>

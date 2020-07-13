@@ -1,0 +1,4 @@
+PrometheusMqttBridge/bin/*
+PrometheusMqttBridge/obj/*
+.idea
+*.user
