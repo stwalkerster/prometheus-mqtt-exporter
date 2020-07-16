@@ -1,10 +1,16 @@
 namespace PrometheusMqttBridge
 {
+    using System;
     using System.Text.RegularExpressions;
+    using Prometheus;
     using PrometheusMqttBridge.Config;
 
     public abstract class Metric
     {
+        private static readonly Counter ParseFailCounter = Metrics.CreateCounter(
+            "mqttbridge_parse_failures_total",
+            "Number of parse failures in the MQTT messages");
+        
         private readonly Regex regex;
         private readonly string[] labelNames;
         private readonly string munge;
@@ -23,8 +29,37 @@ namespace PrometheusMqttBridge
             {
                 return;
             }
+
+            switch (this.munge)
+            {
+                case "bool2int":
+                    switch (message.Trim().ToLowerInvariant())
+                    {
+                        case "on":
+                        case "true":
+                        case "1":
+                            message = "1";
+                            break;
+                        case "off":
+                        case "false":
+                        case "0":
+                            message = "0";
+                            break;
+                        default:
+                            Console.WriteLine($"ERROR: Topic {topic} received a value which could not be parsed by bool2int: '{message}'");
+                            ParseFailCounter.Inc();
+                            return;
+                    }
+                    break;
+            }
             
-            var value = double.Parse(message);
+            double value;
+            if (!double.TryParse(message, out value))
+            {
+                Console.WriteLine($"ERROR: Topic {topic} received a value which could not be parsed: '{message}'");
+                ParseFailCounter.Inc();
+                return;
+            }
 
             switch (this.munge)
             {
