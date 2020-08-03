@@ -12,5 +12,7 @@ namespace PrometheusMqttBridge.Config
         
         public string WillTopic { get; set; }
         public string WillValue { get; set; }
+        
+        public Dictionary<string, Dictionary<string, string>> WillMap { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 namespace PrometheusMqttBridge
 {
     using System;
+    using System.Collections.Generic;
     using System.Text.RegularExpressions;
     using Prometheus;
     using PrometheusMqttBridge.Config;
@@ -16,6 +17,7 @@ namespace PrometheusMqttBridge
         private readonly string munge;
         private readonly Regex willTopic;
         private readonly string willValue;
+        private readonly Dictionary<string, Dictionary<string, string>> willMap;
 
         protected Metric(MetricConfig config)
         {
@@ -27,6 +29,7 @@ namespace PrometheusMqttBridge
             {
                 this.willTopic = new Regex(config.WillTopic);
                 this.willValue = config.WillValue;
+                this.willMap = config.WillMap;
             }
         }
 
@@ -46,7 +49,15 @@ namespace PrometheusMqttBridge
                             willLabelValues = new string[this.labelNames.Length];
                             for (var i = 0; i < this.labelNames.Length; i++)
                             {
-                                willLabelValues[i] = willMatch.Groups[this.labelNames[i]].Value;
+                                var labelName = this.labelNames[i];
+                                var labelValue = willMatch.Groups[labelName].Value;
+
+                                if (this.willMap.ContainsKey(labelName) && this.willMap[labelName].ContainsKey(labelValue))
+                                {
+                                    labelValue = this.willMap[labelName][labelValue];
+                                }
+
+                                willLabelValues[i] = labelValue;
                             }
                         }
 
