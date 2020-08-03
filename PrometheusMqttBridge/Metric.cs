@@ -52,7 +52,9 @@ namespace PrometheusMqttBridge
                                 var labelName = this.labelNames[i];
                                 var labelValue = willMatch.Groups[labelName].Value;
 
-                                if (this.willMap.ContainsKey(labelName) && this.willMap[labelName].ContainsKey(labelValue))
+                                if (this.willMap != null 
+                                    && this.willMap.ContainsKey(labelName) 
+                                    && this.willMap[labelName].ContainsKey(labelValue))
                                 {
                                     labelValue = this.willMap[labelName][labelValue];
                                 }
