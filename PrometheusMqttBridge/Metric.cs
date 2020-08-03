@@ -14,16 +14,48 @@ namespace PrometheusMqttBridge
         private readonly Regex regex;
         private readonly string[] labelNames;
         private readonly string munge;
+        private readonly Regex willTopic;
+        private readonly string willValue;
 
         protected Metric(MetricConfig config)
         {
             this.regex = new Regex(config.Parse);
             this.labelNames = config.Labels?.ToArray();
             this.munge = config.Munge;
+
+            if (config.WillTopic != null)
+            {
+                this.willTopic = new Regex(config.WillTopic);
+                this.willValue = config.WillValue;
+            }
         }
 
         public void Ingest(string topic, string message)
         {
+            // check received topic against will topic
+            if (this.willTopic != null)
+            {
+                var willMatch = this.willTopic.Match(topic);
+                if (willMatch.Success)
+                {
+                    if (message != this.willValue)
+                    {
+                        string[] willLabelValues = null;
+                        if (this.labelNames != null)
+                        {
+                            willLabelValues = new string[this.labelNames.Length];
+                            for (var i = 0; i < this.labelNames.Length; i++)
+                            {
+                                willLabelValues[i] = willMatch.Groups[this.labelNames[i]].Value;
+                            }
+                        }
+
+                        this.RemoveMetric(willLabelValues);
+                    }
+                }
+            }
+
+            // check received topic against topic regex
             var match = this.regex.Match(topic);
             if (!match.Success)
             {
@@ -81,5 +113,8 @@ namespace PrometheusMqttBridge
         }
 
         protected abstract void UpdateMetric(string[] labelValues, double targetValue);
+
+        protected abstract void RemoveMetric(string[] labelValues);
+
     }
 }

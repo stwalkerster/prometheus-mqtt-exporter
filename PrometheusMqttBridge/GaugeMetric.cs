@@ -9,7 +9,11 @@ namespace PrometheusMqttBridge
 
         public GaugeMetric(MetricConfig config) : base(config)
         {
-            this.metric = Metrics.CreateGauge(config.Metric, config.Help, config.Labels?.ToArray() ?? new string[0]);
+            this.metric = Metrics.CreateGauge(config.Metric, config.Help, new GaugeConfiguration
+            {
+                LabelNames = config.Labels?.ToArray() ?? new string[0],
+                SuppressInitialValue = true
+            });
         }
 
         protected override void UpdateMetric(string[] labelValues, double targetValue)
@@ -21,6 +25,18 @@ namespace PrometheusMqttBridge
             else
             {
                 this.metric.WithLabels(labelValues).Set(targetValue);
+            }
+        }
+
+        protected override void RemoveMetric(string[] labelValues)
+        {
+            if (labelValues == null)
+            {
+                this.metric.Unpublish();
+            }
+            else
+            {
+                this.metric.RemoveLabelled(labelValues);    
             }
         }
     }

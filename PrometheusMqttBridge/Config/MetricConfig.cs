@@ -9,5 +9,8 @@ namespace PrometheusMqttBridge.Config
         public string Parse { get; set; }
         public List<string> Labels { get; set; }
         public string Munge { get; set; }
+        
+        public string WillTopic { get; set; }
+        public string WillValue { get; set; }
     }
 }
