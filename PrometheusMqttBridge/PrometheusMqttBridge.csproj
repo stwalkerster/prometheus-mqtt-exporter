@@ -7,9 +7,9 @@
 
     <ItemGroup>
       <PackageReference Include="M2MqttDotnetCore" Version="1.1.0" />
-      <PackageReference Include="prometheus-net" Version="3.6.0" />
-      <PackageReference Include="prometheus-net.DotNetRuntime" Version="3.3.1" />
-      <PackageReference Include="YamlDotNet" Version="8.1.2" />
+      <PackageReference Include="prometheus-net" Version="4.1.1" />
+      <PackageReference Include="prometheus-net.DotNetRuntime" Version="4.0.0" />
+      <PackageReference Include="YamlDotNet" Version="11.0.1" />
     </ItemGroup>
 
     <ItemGroup>
