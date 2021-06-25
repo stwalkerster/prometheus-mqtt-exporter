@@ -11,10 +11,11 @@ namespace PrometheusMqttBridge
         private static readonly Counter ParseFailCounter = Metrics.CreateCounter(
             "mqttbridge_parse_failures_total",
             "Number of parse failures in the MQTT messages");
-        
+
         private readonly Regex regex;
         private readonly string[] labelNames;
-        private readonly string munge;
+        private readonly Dictionary<string, string> premunge;
+        private readonly Dictionary<string, string> postmunge;
         private readonly Regex willTopic;
         private readonly string willValue;
         private readonly Dictionary<string, Dictionary<string, string>> willMap;
@@ -23,7 +24,25 @@ namespace PrometheusMqttBridge
         {
             this.regex = new Regex(config.Parse);
             this.labelNames = config.Labels?.ToArray();
-            this.munge = config.Munge;
+            this.premunge = config.Premunge;
+            this.postmunge = config.Postmunge;
+
+            if (this.premunge == null)
+            {
+                this.premunge = new Dictionary<string, string>();
+            }
+
+            if (this.postmunge == null)
+            {
+                this.postmunge = new Dictionary<string, string>();
+            }
+
+            if (!string.IsNullOrEmpty(config.Munge))
+            {
+                Console.WriteLine("WARNING: Legacy munge configuration detected");
+                this.premunge.Add(config.Munge, string.Empty);
+                this.postmunge.Add(config.Munge, string.Empty);
+            }
 
             if (config.WillTopic != null)
             {
@@ -52,8 +71,8 @@ namespace PrometheusMqttBridge
                                 var labelName = this.labelNames[i];
                                 var labelValue = willMatch.Groups[labelName].Value;
 
-                                if (this.willMap != null 
-                                    && this.willMap.ContainsKey(labelName) 
+                                if (this.willMap != null
+                                    && this.willMap.ContainsKey(labelName)
                                     && this.willMap[labelName].ContainsKey(labelValue))
                                 {
                                     labelValue = this.willMap[labelName][labelValue];
@@ -75,29 +94,34 @@ namespace PrometheusMqttBridge
                 return;
             }
 
-            switch (this.munge)
+            foreach (var munge in this.premunge)
             {
-                case "bool2int":
-                    switch (message.Trim().ToLowerInvariant())
-                    {
-                        case "on":
-                        case "true":
-                        case "1":
-                            message = "1";
-                            break;
-                        case "off":
-                        case "false":
-                        case "0":
-                            message = "0";
-                            break;
-                        default:
+                var success = true;
+                switch (munge.Key)
+                {
+                    case "bool2int":
+                        success = Munger.BoolToInt(ref message);
+                        if (!success)
+                        {
                             Console.WriteLine($"ERROR: Topic {topic} received a value which could not be parsed by bool2int: '{message}'");
                             ParseFailCounter.Inc();
                             return;
-                    }
-                    break;
+                        }
+
+                        break;
+                    case "jsonpath":
+                        success = Munger.JsonPath(ref message, munge.Value);
+                        if (!success)
+                        {
+                            Console.WriteLine($"ERROR: Topic {topic} received a value which could not be parsed by jsonpath({munge.Value}): '{message}'");
+                            ParseFailCounter.Inc();
+                            return;
+                        }
+
+                        break;
+                }
             }
-            
+
             double value;
             if (!double.TryParse(message, out value))
             {
@@ -106,28 +130,39 @@ namespace PrometheusMqttBridge
                 return;
             }
 
-            switch (this.munge)
+            foreach (var munge in this.postmunge)
             {
-                case "div100":
-                    value = value / 100;
-                    break;
+                var success = true;
+                switch (munge.Key)
+                {
+                    case "div100":
+                        success = Munger.Div100(ref value);
+                        if (!success)
+                        {
+                            Console.WriteLine($"ERROR: Topic {topic} received a value which could not be parsed by div100: '{message}'");
+                            ParseFailCounter.Inc();
+                            return;
+                        }
+
+                        break;
+                }
             }
 
             string[] labelValues = null;
-            if (this.labelNames != null) {
+            if (this.labelNames != null)
+            {
                 labelValues = new string[this.labelNames.Length];
                 for (var i = 0; i < this.labelNames.Length; i++)
                 {
                     labelValues[i] = match.Groups[this.labelNames[i]].Value;
                 }
             }
-            
+
             this.UpdateMetric(labelValues, value);
         }
 
         protected abstract void UpdateMetric(string[] labelValues, double targetValue);
 
         protected abstract void RemoveMetric(string[] labelValues);
-
     }
 }
