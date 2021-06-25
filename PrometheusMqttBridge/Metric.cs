@@ -19,24 +19,20 @@ namespace PrometheusMqttBridge
         private readonly Regex willTopic;
         private readonly string willValue;
         private readonly Dictionary<string, Dictionary<string, string>> willMap;
+        private readonly Dictionary<string, Dictionary<string, string>> labelMap;
 
         protected Metric(MetricConfig config)
         {
             this.regex = new Regex(config.Parse);
             this.labelNames = config.Labels?.ToArray();
+            this.labelMap = config.LabelMap;
             this.premunge = config.Premunge;
             this.postmunge = config.Postmunge;
-
-            if (this.premunge == null)
-            {
-                this.premunge = new Dictionary<string, string>();
-            }
-
-            if (this.postmunge == null)
-            {
-                this.postmunge = new Dictionary<string, string>();
-            }
-
+            
+            this.labelMap ??= new Dictionary<string, Dictionary<string, string>>();
+            this.premunge ??= new Dictionary<string, string>();
+            this.postmunge ??= new Dictionary<string, string>();
+            
             if (!string.IsNullOrEmpty(config.Munge))
             {
                 Console.WriteLine("WARNING: Legacy munge configuration detected");
@@ -154,7 +150,18 @@ namespace PrometheusMqttBridge
                 labelValues = new string[this.labelNames.Length];
                 for (var i = 0; i < this.labelNames.Length; i++)
                 {
-                    labelValues[i] = match.Groups[this.labelNames[i]].Value;
+                    var labelValue = match.Groups[this.labelNames[i]].Value;
+
+                    // apply label remap
+                    if (this.labelMap.ContainsKey(this.labelNames[i]))
+                    {
+                        if (this.labelMap[this.labelNames[i]].ContainsKey(labelValue))
+                        {
+                            labelValue = this.labelMap[this.labelNames[i]][labelValue];
+                        }
+                    }
+                    
+                    labelValues[i] = labelValue;
                 }
             }
 
