@@ -1,4 +1,9 @@
 FROM mcr.microsoft.com/dotnet/sdk:5.0-alpine as build
+ARG tcbuildtype
+ARG tcbuildnumber
+LABEL stage=builder
+LABEL tcbuildtype=$tcbuildtype
+LABEL tcbuildnumber=$tcbuildnumber
 WORKDIR /opt
 COPY PrometheusMqttBridge .
 RUN ["dotnet", "publish", "PrometheusMqttBridge.csproj"]
