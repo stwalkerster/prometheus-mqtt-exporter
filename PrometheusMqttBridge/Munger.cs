@@ -8,6 +8,11 @@ namespace PrometheusMqttBridge
     {
         public static bool BoolToInt(ref string message)
         {
+            if (message == null)
+            {
+                return false;
+            }
+            
             switch (message.Trim().ToLowerInvariant())
             {
                 case "on":
