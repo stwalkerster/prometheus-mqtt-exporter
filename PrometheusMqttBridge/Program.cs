@@ -37,9 +37,18 @@ namespace PrometheusMqttBridge
             metrics.AddRange(config.Counters.Select(x => new CounterValueMetric(x)));
 
             var metricServer = new MetricServer(config.Prometheus.Port, config.Prometheus.Path);
+            if (config.Prometheus.SkipMonitoringProcess)
+            {
+                Metrics.SuppressDefaultMetrics();
+            }
+
             metricServer.Start();
-            DotNetRuntimeStatsBuilder.Default().StartCollecting();
             
+            if (!config.Prometheus.SkipMonitoringProcess)
+            {
+                DotNetRuntimeStatsBuilder.Default().StartCollecting();
+            }
+
             client = new MqttClient(
                 config.Mqtt.Host,
                 config.Mqtt.Port,

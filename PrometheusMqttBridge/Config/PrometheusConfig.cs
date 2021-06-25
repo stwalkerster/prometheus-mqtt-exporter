@@ -4,5 +4,7 @@ namespace PrometheusMqttBridge.Config
     {
         public int Port { get; set; }
         public string Path { get; set; }
+        
+        public bool SkipMonitoringProcess { get; set; }
     }
 }

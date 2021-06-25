@@ -19,6 +19,7 @@ mqtt:
 prometheus:
   port: 9100
   path: metrics/
+  skipMonitoringProcess: false
 counters:
   - metric: mqtt_messages_sent_total
     help: MQTT messages (of all types) sent by broker
