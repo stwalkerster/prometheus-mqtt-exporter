@@ -7,7 +7,7 @@ A Prometheus exporter to log values from an MQTT broker
 This exporter can be run using Docker:
 
 ```
-docker run ...
+docker run -d -v ./config.yml:/config/config.yml -p 9100:9100 docker.scimonshouse.net/promqtt:latest
 ```
 
 ## Configuration
