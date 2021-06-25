@@ -40,6 +40,7 @@ namespace PrometheusMqttBridge
             if (config.Prometheus.SkipMonitoringProcess)
             {
                 Metrics.SuppressDefaultMetrics();
+                MqttMessagesReceived.Unpublish();
             }
 
             metricServer.Start();
@@ -93,8 +94,11 @@ namespace PrometheusMqttBridge
 
         private static void MessageReceived(object sender, MqttMsgPublishEventArgs e)
         {
-            MqttMessagesReceived.Inc();
-            
+            if (! config.Prometheus.SkipMonitoringProcess)
+            {
+                MqttMessagesReceived.Inc();
+            }
+
             foreach (var metric in metrics)
             {
                 metric.Ingest(e.Topic, Encoding.UTF8.GetString(e.Message));
