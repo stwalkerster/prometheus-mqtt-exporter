@@ -11,7 +11,8 @@ RUN ["dotnet", "publish", "PrometheusMqttBridge.csproj"]
 FROM mcr.microsoft.com/dotnet/runtime:5.0-alpine
 ARG tcbuildnumber
 ARG tcbuildrev
-WORKDIR /opt
+RUN mkdir -p /opt/prometheus-mqtt-exporter
+WORKDIR /opt/prometheus-mqtt-exporter
 EXPOSE 9100
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 LABEL org.opencontainers.image.authors="Simon Walker <github@stwalkerster.co.uk>" org.opencontainers.image.licenses="MIT" org.opencontainers.image.source="https://github.com/stwalkerster/prometheus-mqtt-exporter"
