@@ -67,6 +67,7 @@ This section configures the metrics published from MQTT.
 * `premunge` and `postmunge` are dictionaries of munge filters to apply to the received MQTT message before publishing a metric. Premunges operate on the MQTT message as a string; postmunges operate on the value as casted to a number.
 * `labelMap` is a dictionary of dictionaries, allowing label values to be remapped to other values.
 * `willTopic`, `willValue`, and `willMap` are (a string, string and dictionary of dictionaries respectively) a set of values which allow metrics to be unpublished when a certain condition is met.
+* `incrementByValue` is a boolean flag only valid on counters. When this is set, the counter is incremented by the value passed via MQTT, rather than incremented *to* the value passed via MQTT.
 
 ### Example configuration 1
 
@@ -162,6 +163,50 @@ Would produce the following metrics:
 temperature_celsius{device="temp01"} 15.7
 temperature_celsius{device="temp02"} 22.7
 ```
+
+### Example configuration 4
+
+For MQTT topics:
+```
+zigbee2mqtt/thingA = 3
+zigbee2mqtt/thingB = 3
+```
+
+And this configuration:
+```
+  - metric: thing_A_total
+    help: Thing
+    parse: zigbee2mqtt/thingA
+    incrementByValue: false
+  - metric: thing_B_total
+    help: Thing
+    parse: zigbee2mqtt/thingB
+    incrementByValue: true
+```
+
+Would produce the following metrics:
+```
+# HELP temperature_celsius Temperature
+# TYPE temperature_celsius gauge
+thing_A_total 3
+thing_B_total 3
+```
+
+Then, sending these values:
+```
+zigbee2mqtt/thingA = 4
+zigbee2mqtt/thingB = 4
+```
+
+Would produce the following metrics:
+```
+# HELP temperature_celsius Temperature
+# TYPE temperature_celsius gauge
+thing_A_total 4
+thing_B_total 7
+```
+
+`thing_A_total` is incremented up to 4, whereas `thing_B_total` is incremented *by* 4.
 
 ## Munging
 

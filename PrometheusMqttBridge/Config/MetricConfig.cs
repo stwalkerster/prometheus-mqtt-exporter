@@ -15,6 +15,9 @@ namespace PrometheusMqttBridge.Config
         public Dictionary<string, Dictionary<string, string>> WillMap { get; set; }
         
         public Dictionary<string, Dictionary<string, string>> LabelMap { get; set; }
+
+        
+        public bool IncrementByValue { get; set; } = false;
         
         // legacy settings
         public string Munge { get; set; }

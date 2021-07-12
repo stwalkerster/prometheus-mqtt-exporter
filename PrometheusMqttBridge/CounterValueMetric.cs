@@ -14,10 +14,28 @@ namespace PrometheusMqttBridge
                 LabelNames = config.Labels?.ToArray() ?? new string[0],
                 SuppressInitialValue = true
             });
+
+            this.IncrementBy = config.IncrementByValue;
         }
 
+        public bool IncrementBy { get; }
+        
         protected override void UpdateMetric(string[] labelValues, double targetValue)
         {
+            if (this.IncrementBy)
+            {
+                if (labelValues == null)
+                {
+                    this.metric.Inc(targetValue);
+                }
+                else
+                {
+                    this.metric.WithLabels(labelValues).Inc(targetValue);
+                }
+                
+                return;
+            }
+            
             if (labelValues == null)
             {
                 this.metric.IncTo(targetValue);
