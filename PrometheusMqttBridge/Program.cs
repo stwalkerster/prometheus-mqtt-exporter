@@ -16,13 +16,13 @@ namespace PrometheusMqttBridge
 
     class Program
     {
-        private static readonly Counter MqttMessagesReceived = Metrics.CreateCounter(
+        private static readonly Counter MqttMessagesReceived = Prometheus.Metrics.CreateCounter(
             "mqttbridge_messages_total",
             "Number of MQTT messages received by bridge");
         
         private static MqttClient client;
         private static Configuration config;
-        private static readonly List<Metric> metrics = new List<Metric>();
+        private static readonly List<Metric> Metrics = new();
 
         static void Main(string[] args)
         {
@@ -33,13 +33,13 @@ namespace PrometheusMqttBridge
                 .Build();
 
             config = deserializer.Deserialize<Configuration>(input);
-            metrics.AddRange(config.Gauges.Select(x => new GaugeMetric(x)).ToList());
-            metrics.AddRange(config.Counters.Select(x => new CounterValueMetric(x)));
+            Metrics.AddRange(config.Gauges.Select(x => new GaugeMetric(x)).ToList());
+            Metrics.AddRange(config.Counters.Select(x => new CounterValueMetric(x)));
 
             var metricServer = new MetricServer(config.Prometheus.Port, config.Prometheus.Path);
             if (config.Prometheus.SkipMonitoringProcess)
             {
-                Metrics.SuppressDefaultMetrics();
+                Prometheus.Metrics.SuppressDefaultMetrics();
                 MqttMessagesReceived.Unpublish();
             }
 
@@ -55,7 +55,7 @@ namespace PrometheusMqttBridge
                 config.Mqtt.Port,
                 config.Mqtt.Tls,
                 MqttSslProtocols.TLSv1_2,
-                (sender, certificate, chain, errors) => true,
+                (_, _, _, _) => true,
                 null);
 
             client.MqttMsgPublishReceived += MessageReceived;
@@ -99,7 +99,7 @@ namespace PrometheusMqttBridge
                 MqttMessagesReceived.Inc();
             }
 
-            foreach (var metric in metrics)
+            foreach (var metric in Metrics)
             {
                 metric.Ingest(e.Topic, Encoding.UTF8.GetString(e.Message));
             }
