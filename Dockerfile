@@ -17,7 +17,7 @@ EXPOSE 9100
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
 LABEL org.opencontainers.image.authors="Simon Walker <github@stwalkerster.co.uk>" org.opencontainers.image.licenses="MIT" org.opencontainers.image.source="https://github.com/stwalkerster/prometheus-mqtt-exporter"
 LABEL org.opencontainers.image.revision=$tcbuildrev org.opencontainers.image.version=$tcbuildnumber
-COPY --from=build /opt/bin/Debug/net8.0/publish/ ./
+COPY --from=build /opt/bin/Release/net8.0/publish/ ./
 RUN mkdir /config && \
     cp config.yml /config/config.yml
 ENTRYPOINT ["dotnet", "PrometheusMqttBridge.dll"]
