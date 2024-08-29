@@ -1,5 +1,12 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B6FBBE63-50B8-433A-B2B1-4109689C629D}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+		LICENSE = LICENSE
+		Dockerfile = Dockerfile
+		.gitignore = .gitignore
+	EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrometheusMqttBridge", "PrometheusMqttBridge\PrometheusMqttBridge.csproj", "{A9432686-7448-4D72-A6CC-91749E4D2F0A}"
 EndProject
 Global
